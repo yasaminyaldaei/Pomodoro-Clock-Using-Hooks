@@ -48,7 +48,7 @@ function PomodoroApp() {
         sessionLength={sessionLength}
         sessionstate={sessionState}
         onStartStop={() => {
-          setSessionState(sessionState == "Start" ? "Stop" : "Start");
+          setSessionState(sessionState === "Start" ? "Stop" : "Start");
         }}
         onReset={() => {
           setSessionLength(25);
@@ -65,13 +65,13 @@ function Length(props) {
     <div class="break-length">
       <h2 id={props.labelid}>{props.name}</h2>
       <div class="length-configuration">
-        <a href="#" id={props.decrementid} onClick={props.onClickDecrease}>
+        <button id={props.decrementid} onClick={props.onClickDecrease}>
           &darr;
-        </a>
+        </button>
         <p id={props.lengthid}>{props.length}</p>
-        <a href="#" id={props.incrementid} onClick={props.onClickIncrease}>
+        <button id={props.incrementid} onClick={props.onClickIncrease}>
           &uarr;
-        </a>
+        </button>
       </div>
     </div>
   );
@@ -91,14 +91,14 @@ function Timer(props) {
       <h2 id="timer-label">Session</h2>
       <div id="time-left">{timeFormat}</div>
       <h3>
-        <a id="start_stop" href="#" onClick={props.onStartStop}>
+        <button id="start_stop" onClick={props.onStartStop}>
           {props.sessionstate}
-        </a>
+        </button>
       </h3>
       <h4>
-        <a id="reset" href="#" onClick={props.onReset}>
+        <button id="reset" onClick={props.onReset}>
           Reset
-        </a>
+        </button>
       </h4>
     </div>
   );
@@ -113,7 +113,7 @@ function formatTime(remainingInMilliseconds) {
   let seconds = remainingDate.getSeconds();
 
   return (
-    (minutes == 0 ? "60" : minutes < 10 ? "0" + minutes : minutes) +
+    (minutes === 0 ? "60" : minutes < 10 ? "0" + minutes : minutes) +
     ":" +
     (seconds < 10 ? "0" + seconds : seconds)
   );
