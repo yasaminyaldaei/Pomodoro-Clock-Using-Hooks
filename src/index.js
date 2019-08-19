@@ -7,22 +7,50 @@ function PomodoroApp() {
   const [breakLength, setBreakLength] = useState(5);
   const [sessionLength, setSessionLength] = useState(25);
   const [sessionState, setSessionState] = useState("Start");
+  const [isTimerRunning, setTimerRunning] = useState(false);
+  const [isBreakTime, setBreakTime] = useState(false);
   const [timeLeft, setTimeLeft] = useState(sessionLength * 60 * 1000);
   const [timeFormat, setTimeFormat] = useState(formatTime(timeLeft));
+  const [timerLabel, setTimerLabel] = useState("Session");
 
   useInterval(() => {
     if (sessionState === "Stop") {
-      setTimeLeft(timeLeft - 1000);
-      setTimeFormat(formatTime(timeLeft - 1000));
+      if (timeLeft > 0) {
+        setTimeLeft(timeLeft - 1000);
+        setTimeFormat(formatTime(timeLeft - 1000));
+      } else {
+        document.getElementById("beep").play();
+        if (!isBreakTime) {
+          setBreakTime(true);
+          setTimerLabel("Break");
+          setTimeLeft(breakLength * 60 * 1000);
+        } else {
+          setBreakTime(false);
+          setTimerLabel("Session");
+          setTimeLeft(sessionLength * 60 * 1000);
+        }
+      }
     }
   }, 1000);
 
   useEffect(() => {
-    if (sessionState === "Start") {
-      setTimeLeft(sessionLength * 60 * 1000);
-      setTimeFormat(formatTime(timeLeft));
+    if (sessionState === "Start" && !isTimerRunning) {
+      if (!isBreakTime) {
+        setTimeLeft(sessionLength * 60 * 1000);
+        setTimeFormat(formatTime(timeLeft));
+      } else {
+        setTimeLeft(breakLength * 60 * 1000);
+        setTimeFormat(formatTime(timeLeft));
+      }
     }
-  }, [sessionLength, timeLeft, sessionState]);
+  }, [
+    sessionLength,
+    timeLeft,
+    sessionState,
+    isTimerRunning,
+    isBreakTime,
+    breakLength
+  ]);
 
   return (
     <div className="app">
@@ -64,16 +92,24 @@ function PomodoroApp() {
       <Timer
         timeFormat={timeFormat}
         sessionstate={sessionState}
+        timerLabel={timerLabel}
         onStartStop={() => {
           setSessionState(sessionState === "Start" ? "Stop" : "Start");
+          setTimerRunning(true);
         }}
         onReset={() => {
           setSessionLength(25);
           setBreakLength(5);
           setSessionState("Start");
+          setTimerRunning(false);
+          setBreakTime(false);
+          setTimeLeft(25 * 60 * 1000);
           setTimeFormat(formatTime(25 * 60 * 1000));
+          setTimerLabel("Session");
+          document.getElementById("beep").currentTime = 0;
         }}
       />
+      <audio src="https://goo.gl/65cBl1" id="beep" />
     </div>
   );
 }
@@ -98,7 +134,7 @@ function Length(props) {
 function Timer(props) {
   return (
     <div className="timer">
-      <h2 id="timer-label">Session</h2>
+      <h2 id="timer-label">{props.timerLabel}</h2>
       <div id="time-left">{props.timeFormat}</div>
       <button id="start_stop" onClick={props.onStartStop}>
         {props.sessionstate}
