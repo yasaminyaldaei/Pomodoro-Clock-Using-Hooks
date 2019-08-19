@@ -19,6 +19,21 @@ h2 {
   text-align: center;
 }
 
+button {
+  margin: 10px;
+  background-color: white;
+  border: none;
+  font-weight: bold;
+}
+
+button:hover {
+  cursor: pointer;
+}
+
+button:focus-within {
+  border: none;
+}
+
 .app {
   width: 50%;
   height: 100%;

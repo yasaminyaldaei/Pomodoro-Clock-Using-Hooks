@@ -6,8 +6,23 @@ import "./styles.css";
 function PomodoroApp() {
   const [breakLength, setBreakLength] = useState(5);
   const [sessionLength, setSessionLength] = useState(25);
-  const [isBreakTime, setBreakTime] = useState(false);
   const [sessionState, setSessionState] = useState("Start");
+  const [timeLeft, setTimeLeft] = useState(sessionLength * 60 * 1000);
+  const [timeFormat, setTimeFormat] = useState(formatTime(timeLeft));
+
+  useInterval(() => {
+    if (sessionState === "Stop") {
+      setTimeLeft(timeLeft - 1000);
+      setTimeFormat(formatTime(timeLeft - 1000));
+    }
+  }, 1000);
+
+  useEffect(() => {
+    if (sessionState === "Start") {
+      setTimeLeft(sessionLength * 60 * 1000);
+      setTimeFormat(formatTime(timeLeft));
+    }
+  }, [sessionLength, timeLeft, sessionState]);
 
   return (
     <div class="app">
@@ -47,7 +62,7 @@ function PomodoroApp() {
         />
       </div>
       <Timer
-        sessionLength={sessionLength}
+        timeFormat={timeFormat}
         sessionstate={sessionState}
         onStartStop={() => {
           setSessionState(sessionState === "Start" ? "Stop" : "Start");
@@ -55,6 +70,7 @@ function PomodoroApp() {
         onReset={() => {
           setSessionLength(25);
           setBreakLength(5);
+          setSessionState("Start");
           setTimeFormat(formatTime(25 * 60 * 1000));
         }}
       />
@@ -80,28 +96,17 @@ function Length(props) {
 }
 
 function Timer(props) {
-  const [timeLeft, setTimeLeft] = useState(25 * 60 * 1000);
-  const [timeFormat, setTimeFormat] = useState(formatTime(timeLeft));
-
-  useInterval(() => {
-    setTimeLeft(timeLeft - 1000);
-    setTimeFormat(formatTime(timeLeft - 1000));
-  }, 1000);
-
   return (
     <div class="timer">
       <h2 id="timer-label">Session</h2>
-      <div id="time-left">{timeFormat}</div>
-      <h3>
-        <button id="start_stop" onClick={props.onStartStop}>
-          {props.sessionstate}
-        </button>
-      </h3>
-      <h4>
-        <button id="reset" onClick={props.onReset}>
-          Reset
-        </button>
-      </h4>
+      <div id="time-left">{props.timeFormat}</div>
+      <button id="start_stop" onClick={props.onStartStop}>
+        {props.sessionstate}
+      </button>
+
+      <button id="reset" onClick={props.onReset}>
+        Reset
+      </button>
     </div>
   );
 }
@@ -115,7 +120,11 @@ function formatTime(remainingInMilliseconds) {
   let seconds = remainingDate.getSeconds();
 
   return (
-    (minutes === 0 ? "60" : minutes < 10 ? "0" + minutes : minutes) +
+    (remainingInMilliseconds / (60 * 1000) === 60
+      ? "60"
+      : minutes < 10
+      ? "0" + minutes
+      : minutes) +
     ":" +
     (seconds < 10 ? "0" + seconds : seconds)
   );
