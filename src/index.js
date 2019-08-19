@@ -25,9 +25,9 @@ function PomodoroApp() {
   }, [sessionLength, timeLeft, sessionState]);
 
   return (
-    <div class="app">
+    <div className="app">
       <h1>Pomodoro Clock</h1>
-      <div class="app-configuration">
+      <div className="app-configuration">
         <Length
           name="Break Length"
           length={breakLength}
@@ -80,9 +80,9 @@ function PomodoroApp() {
 
 function Length(props) {
   return (
-    <div class="break-length">
+    <div className="break-length">
       <h2 id={props.labelid}>{props.name}</h2>
-      <div class="length-configuration">
+      <div className="length-configuration">
         <button id={props.decrementid} onClick={props.onClickDecrease}>
           &darr;
         </button>
@@ -97,7 +97,7 @@ function Length(props) {
 
 function Timer(props) {
   return (
-    <div class="timer">
+    <div className="timer">
       <h2 id="timer-label">Session</h2>
       <div id="time-left">{props.timeFormat}</div>
       <button id="start_stop" onClick={props.onStartStop}>
