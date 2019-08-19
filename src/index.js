@@ -3,16 +3,14 @@ import ReactDOM from "react-dom";
 
 import "./styles.css";
 
-const TimeFormatContext = React.createContext();
-
 function PomodoroApp() {
   const [breakLength, setBreakLength] = useState(5);
   const [sessionLength, setSessionLength] = useState(25);
   const [sessionState, setSessionState] = useState("Start");
   const [isTimerRunning, setTimerRunning] = useState(false);
   const [isBreakTime, setBreakTime] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(sessionLength * 60 * 1000);
-  const [timeFormat, setTimeFormat] = useState(formatTime(timeLeft));
+  const [timeLeft, setTimeLeft] = useState(25 * 60 * 1000);
+  const [timeFormat, setTimeFormat] = useState(formatTime(25 * 60 * 1000));
   const [timerLabel, setTimerLabel] = useState("Session");
 
   useInterval(() => {
@@ -60,66 +58,67 @@ function PomodoroApp() {
   });
 
   return (
-    <TimeFormatContext.Provider value={timeFormat}>
-      <div className="app">
-        <h1>Pomodoro Clock</h1>
-        <div className="app-configuration">
-          <Length
-            name="Break Length"
-            length={breakLength}
-            labelid="break-label"
-            decrementid="break-decrement"
-            incrementid="break-increment"
-            lengthid="break-length"
-            onClickDecrease={() =>
-              setBreakLength(breakLength > 1 ? breakLength - 1 : breakLength)
-            }
-            onClickIncrease={() =>
-              setBreakLength(breakLength < 60 ? breakLength + 1 : breakLength)
-            }
-          />
-          <Length
-            name="Session Length"
-            length={sessionLength}
-            labelid="session-label"
-            decrementid="session-decrement"
-            incrementid="session-increment"
-            lengthid="session-length"
-            onClickDecrease={() =>
-              setSessionLength(
-                sessionLength > 1 ? sessionLength - 1 : sessionLength
-              )
-            }
-            onClickIncrease={() =>
-              setSessionLength(
-                sessionLength < 60 ? sessionLength + 1 : sessionLength
-              )
-            }
-          />
-        </div>
-        <Timer
-          sessionstate={sessionState}
-          timerLabel={timerLabel}
-          onStartStop={() => {
-            setSessionState(sessionState === "Start" ? "Stop" : "Start");
-            setTimerRunning(true);
-          }}
-          onReset={() => {
-            setSessionLength(25);
-            setBreakLength(5);
-            setSessionState("Start");
-            setTimerRunning(false);
-            setBreakTime(false);
-            setTimeLeft(25 * 60 * 1000);
-            setTimeFormat(formatTime(25 * 60 * 1000));
-            setTimerLabel("Session");
-            document.getElementById("beep").pause();
-            document.getElementById("beep").currentTime = 0;
-          }}
+    <div className="app">
+      <h1>Pomodoro Clock</h1>
+      <div className="app-configuration">
+        <Length
+          name="Break Length"
+          length={breakLength}
+          labelid="break-label"
+          decrementid="break-decrement"
+          incrementid="break-increment"
+          lengthid="break-length"
+          onClickDecrease={() =>
+            setBreakLength(breakLength > 1 ? breakLength - 1 : breakLength)
+          }
+          onClickIncrease={() =>
+            setBreakLength(breakLength < 60 ? breakLength + 1 : breakLength)
+          }
         />
-        <audio src="https://goo.gl/65cBl1" id="beep" />
+        <Length
+          name="Session Length"
+          length={sessionLength}
+          labelid="session-label"
+          decrementid="session-decrement"
+          incrementid="session-increment"
+          lengthid="session-length"
+          onClickDecrease={() =>
+            setSessionLength(
+              sessionLength > 1 ? sessionLength - 1 : sessionLength
+            )
+          }
+          onClickIncrease={() =>
+            setSessionLength(
+              sessionLength < 60 ? sessionLength + 1 : sessionLength
+            )
+          }
+        />
       </div>
-    </TimeFormatContext.Provider>
+      <Timer
+        timeFormat={
+          isTimerRunning ? timeFormat : formatTime(sessionLength * 60 * 1000)
+        }
+        sessionstate={sessionState}
+        timerLabel={timerLabel}
+        onStartStop={() => {
+          setSessionState(sessionState === "Start" ? "Stop" : "Start");
+          setTimerRunning(true);
+        }}
+        onReset={() => {
+          setSessionLength(25);
+          setBreakLength(5);
+          setSessionState("Start");
+          setTimerRunning(false);
+          setBreakTime(false);
+          setTimeLeft(25 * 60 * 1000);
+          setTimeFormat(formatTime(25 * 60 * 1000));
+          setTimerLabel("Session");
+          document.getElementById("beep").pause();
+          document.getElementById("beep").currentTime = 0;
+        }}
+      />
+      <audio src="https://goo.gl/65cBl1" id="beep" />
+    </div>
   );
 }
 
@@ -141,11 +140,10 @@ function Length(props) {
 }
 
 function Timer(props) {
-  const timeFormat = useContext(TimeFormatContext);
   return (
     <div className="timer">
       <h2 id="timer-label">{props.timerLabel}</h2>
-      <div id="time-left">{timeFormat}</div>
+      <div id="time-left">{props.timeFormat}</div>
       <button id="start_stop" onClick={props.onStartStop}>
         {props.sessionstate}
       </button>
