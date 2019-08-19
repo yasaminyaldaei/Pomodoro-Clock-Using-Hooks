@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import ReactDOM from "react-dom";
 
 import "./styles.css";
+
+const TimeFormatContext = React.createContext();
 
 function PomodoroApp() {
   const [breakLength, setBreakLength] = useState(5);
@@ -19,15 +21,14 @@ function PomodoroApp() {
         setTimeLeft(timeLeft - 1000);
         setTimeFormat(formatTime(timeLeft - 1000));
       } else {
-        document.getElementById("beep").play();
         if (!isBreakTime) {
           setBreakTime(true);
           setTimerLabel("Break");
-          setTimeLeft(breakLength * 60 * 1000);
+          setTimeLeft(breakLength * 60 * 1000 + 1000);
         } else {
           setBreakTime(false);
           setTimerLabel("Session");
-          setTimeLeft(sessionLength * 60 * 1000);
+          setTimeLeft(sessionLength * 60 * 1000 + 1000);
         }
       }
     }
@@ -52,65 +53,73 @@ function PomodoroApp() {
     breakLength
   ]);
 
+  useEffect(() => {
+    if (timeFormat === "00:00") {
+      document.getElementById("beep").play();
+    }
+  });
+
   return (
-    <div className="app">
-      <h1>Pomodoro Clock</h1>
-      <div className="app-configuration">
-        <Length
-          name="Break Length"
-          length={breakLength}
-          labelid="break-label"
-          decrementid="break-decrement"
-          incrementid="break-increment"
-          lengthid="break-length"
-          onClickDecrease={() =>
-            setBreakLength(breakLength > 1 ? breakLength - 1 : breakLength)
-          }
-          onClickIncrease={() =>
-            setBreakLength(breakLength < 60 ? breakLength + 1 : breakLength)
-          }
+    <TimeFormatContext.Provider value={timeFormat}>
+      <div className="app">
+        <h1>Pomodoro Clock</h1>
+        <div className="app-configuration">
+          <Length
+            name="Break Length"
+            length={breakLength}
+            labelid="break-label"
+            decrementid="break-decrement"
+            incrementid="break-increment"
+            lengthid="break-length"
+            onClickDecrease={() =>
+              setBreakLength(breakLength > 1 ? breakLength - 1 : breakLength)
+            }
+            onClickIncrease={() =>
+              setBreakLength(breakLength < 60 ? breakLength + 1 : breakLength)
+            }
+          />
+          <Length
+            name="Session Length"
+            length={sessionLength}
+            labelid="session-label"
+            decrementid="session-decrement"
+            incrementid="session-increment"
+            lengthid="session-length"
+            onClickDecrease={() =>
+              setSessionLength(
+                sessionLength > 1 ? sessionLength - 1 : sessionLength
+              )
+            }
+            onClickIncrease={() =>
+              setSessionLength(
+                sessionLength < 60 ? sessionLength + 1 : sessionLength
+              )
+            }
+          />
+        </div>
+        <Timer
+          sessionstate={sessionState}
+          timerLabel={timerLabel}
+          onStartStop={() => {
+            setSessionState(sessionState === "Start" ? "Stop" : "Start");
+            setTimerRunning(true);
+          }}
+          onReset={() => {
+            setSessionLength(25);
+            setBreakLength(5);
+            setSessionState("Start");
+            setTimerRunning(false);
+            setBreakTime(false);
+            setTimeLeft(25 * 60 * 1000);
+            setTimeFormat(formatTime(25 * 60 * 1000));
+            setTimerLabel("Session");
+            document.getElementById("beep").pause();
+            document.getElementById("beep").currentTime = 0;
+          }}
         />
-        <Length
-          name="Session Length"
-          length={sessionLength}
-          labelid="session-label"
-          decrementid="session-decrement"
-          incrementid="session-increment"
-          lengthid="session-length"
-          onClickDecrease={() =>
-            setSessionLength(
-              sessionLength > 1 ? sessionLength - 1 : sessionLength
-            )
-          }
-          onClickIncrease={() =>
-            setSessionLength(
-              sessionLength < 60 ? sessionLength + 1 : sessionLength
-            )
-          }
-        />
+        <audio src="https://goo.gl/65cBl1" id="beep" />
       </div>
-      <Timer
-        timeFormat={timeFormat}
-        sessionstate={sessionState}
-        timerLabel={timerLabel}
-        onStartStop={() => {
-          setSessionState(sessionState === "Start" ? "Stop" : "Start");
-          setTimerRunning(true);
-        }}
-        onReset={() => {
-          setSessionLength(25);
-          setBreakLength(5);
-          setSessionState("Start");
-          setTimerRunning(false);
-          setBreakTime(false);
-          setTimeLeft(25 * 60 * 1000);
-          setTimeFormat(formatTime(25 * 60 * 1000));
-          setTimerLabel("Session");
-          document.getElementById("beep").currentTime = 0;
-        }}
-      />
-      <audio src="https://goo.gl/65cBl1" id="beep" />
-    </div>
+    </TimeFormatContext.Provider>
   );
 }
 
@@ -132,10 +141,11 @@ function Length(props) {
 }
 
 function Timer(props) {
+  const timeFormat = useContext(TimeFormatContext);
   return (
     <div className="timer">
       <h2 id="timer-label">{props.timerLabel}</h2>
-      <div id="time-left">{props.timeFormat}</div>
+      <div id="time-left">{timeFormat}</div>
       <button id="start_stop" onClick={props.onStartStop}>
         {props.sessionstate}
       </button>
